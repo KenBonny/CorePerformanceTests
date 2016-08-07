@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace KenBonny.CorePerformanceTests.PerformanceTests.StringConcatTests
+namespace KenBonny.CorePerformanceTests.PerformanceTests.StringConcatPerformanceTests
 {
     public class StringBuilderTest : IPerformanceTest
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace KenBonny.CorePerformanceTests.PerformanceTests.StringConcatTests
+namespace KenBonny.CorePerformanceTests.PerformanceTests.StringConcatPerformanceTests
 {
     public class StringFormatTest : IPerformanceTest
     {

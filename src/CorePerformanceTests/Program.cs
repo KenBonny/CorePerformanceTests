@@ -11,20 +11,29 @@ namespace KenBonny.CorePerformanceTests
     {
         public static void Main(string[] args)
         {
-            int iterations;
-            Console.Write("Iterations: ");
-            while (int.TryParse(Console.ReadLine(), out iterations))
+            try
             {
-                var results = ExecutePerformanceTests(iterations);
-                PrintResults(results);
-                Console.WriteLine();
                 Console.Write("Iterations: ");
+                int iterations;
+                while (int.TryParse(Console.ReadLine(), out iterations))
+                {
+                    var results = ExecutePerformanceTests(iterations);
+                    PrintResults(results);
+                    Console.WriteLine();
+                    Console.Write("Iterations: ");
+                }
+            }
+            catch (Exception exception)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(exception);
+                Console.ForegroundColor = default(ConsoleColor);
             }
         }
 
         private static void PrintResults(IEnumerable<Result> results)
         {
-            foreach (var result in results.OrderBy(x => x.StatisticResult).GroupBy(x => x.StatisticType))
+            foreach (var result in results.OrderBy(x => x.StatisticType.Name).ThenBy(x => x.StatisticResult).GroupBy(x => x.StatisticType).OrderBy(x => x.Key))
             {
                 Console.WriteLine($"For {result.Key.Name}");
                 var enumerator = result.GetEnumerator();

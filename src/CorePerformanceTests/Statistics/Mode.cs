@@ -10,7 +10,7 @@ namespace KenBonny.CorePerformanceTests.Statistics
 
         public decimal Calculate(IEnumerable<TimeSpan> executionTimes)
         {
-            Result = executionTimes.GroupBy(x => x.Ticks).Max(x => x.Count());
+            Result = executionTimes.GroupBy(x => x.Ticks).OrderByDescending(x => x.Count()).First().Key;
             return Result;
         }
     }

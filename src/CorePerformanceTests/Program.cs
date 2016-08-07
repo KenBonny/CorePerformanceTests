@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using KenBonny.CorePerformanceTests.PerformanceTests;
-using KenBonny.CorePerformanceTests.PerformanceTests.StringConcatTests;
+using KenBonny.CorePerformanceTests.PerformanceTests.StringConcatCompleteTests;
+using KenBonny.CorePerformanceTests.PerformanceTests.StringConcatPerformanceTests;
 using KenBonny.CorePerformanceTests.Statistics;
 
 namespace KenBonny.CorePerformanceTests
@@ -21,11 +18,12 @@ namespace KenBonny.CorePerformanceTests
                 int iterations;
                 while (int.TryParse(Console.ReadLine(), out iterations))
                 {
-                    var results = ExecutePerformanceTests(iterations);
-                    PrintResults(results);
+                    var performanceTests = ExecutePerformanceTests(iterations);
+                    PrintPerformanceResults(performanceTests);
                     Console.WriteLine();
 
-                    ExecuteSimpleTests(iterations);
+                    var completeTests = ExecuteCompleteTests(iterations);
+                    PrintCompleteTests(completeTests);
                     Console.WriteLine();
                     Console.Write("Iterations: ");
                 }
@@ -38,48 +36,30 @@ namespace KenBonny.CorePerformanceTests
             }
         }
 
-        private static void ExecuteSimpleTests(int iterations)
+        private static void PrintCompleteTests(IDictionary<string, TimeSpan> results)
         {
-            Action<string, long> print = (name, sec) => Console.WriteLine("String {0, 15}: {1, 4} ms", name, sec);
-
-            var result = "";
-            var stopwatch = Stopwatch.StartNew();
-            for (var i = 0; i < iterations; i++)
+            Console.WriteLine("For complete tests");
+            foreach (var result in results.OrderBy(x => x.Value))
             {
-                result += " " + i;
+                Console.WriteLine("{0,30}: {1,10} ms", result.Key, result.Value.Milliseconds);
             }
-            stopwatch.Stop();
-            print("sum", stopwatch.ElapsedMilliseconds);
-
-            result = "";
-            stopwatch.Restart();
-            for (var i = 0; i < iterations; i++)
-            {
-                result = string.Format("{0} {1}", result, i);
-            }
-            stopwatch.Stop();
-            print("format", stopwatch.ElapsedMilliseconds);
-
-            var builder = new StringBuilder();
-            stopwatch.Restart();
-            for (var i = 0; i < iterations; i++)
-            {
-                builder.Append(i);
-            }
-            stopwatch.Stop();
-            print("builder", stopwatch.ElapsedMilliseconds);
-
-            result = "";
-            stopwatch.Restart();
-            for (var i = 0; i < iterations; i++)
-            {
-                result = $"{result} {i}";
-            }
-            stopwatch.Stop();
-            print("interpolation", stopwatch.ElapsedMilliseconds);
         }
 
-        private static void PrintResults(IEnumerable<Result> results)
+        private static IDictionary<string, TimeSpan> ExecuteCompleteTests(int iterations)
+        {
+            var results = new Dictionary<string, TimeSpan>();
+
+            foreach (var test in StringCompleteTests())
+            {
+                var tester = new CompleteTester(test);
+                var timeSpan = tester.ExecuteTest(iterations);
+                results.Add(test.GetType().Name, timeSpan);
+            }
+
+            return results;
+        }
+
+        private static void PrintPerformanceResults(IEnumerable<Result> results)
         {
             foreach (var result in results.OrderBy(x => x.StatisticType.Name).ThenBy(x => x.StatisticResult).GroupBy(x => x.StatisticType))
             {
@@ -121,6 +101,17 @@ namespace KenBonny.CorePerformanceTests
                 new StringFormatTest(),
                 new StringInterpolationTest(),
                 new StringSumTest()
+            };
+        }
+
+        private static IEnumerable<ICompleteTest> StringCompleteTests()
+        {
+            return new ICompleteTest[]
+            {
+                new StringBuilderCompleteTest(), 
+                new StringFormatCompleteTest(), 
+                new StringInterpolationCompleteTest(), 
+                new StringSumCompleteTest(), 
             };
         }
 

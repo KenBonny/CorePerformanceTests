@@ -33,7 +33,7 @@ namespace KenBonny.CorePerformanceTests
 
         private static void PrintResults(IEnumerable<Result> results)
         {
-            foreach (var result in results.OrderBy(x => x.StatisticType.Name).ThenBy(x => x.StatisticResult).GroupBy(x => x.StatisticType).OrderBy(x => x.Key))
+            foreach (var result in results.OrderBy(x => x.StatisticType.Name).ThenBy(x => x.StatisticResult).GroupBy(x => x.StatisticType))
             {
                 Console.WriteLine($"For {result.Key.Name}");
                 var enumerator = result.GetEnumerator();

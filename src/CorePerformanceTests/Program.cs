@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using KenBonny.CorePerformanceTests.PerformanceTests;
 using KenBonny.CorePerformanceTests.PerformanceTests.StringConcatTests;
 using KenBonny.CorePerformanceTests.Statistics;
@@ -20,6 +24,9 @@ namespace KenBonny.CorePerformanceTests
                     var results = ExecutePerformanceTests(iterations);
                     PrintResults(results);
                     Console.WriteLine();
+
+                    ExecuteSimpleTests(iterations);
+                    Console.WriteLine();
                     Console.Write("Iterations: ");
                 }
             }
@@ -31,6 +38,47 @@ namespace KenBonny.CorePerformanceTests
             }
         }
 
+        private static void ExecuteSimpleTests(int iterations)
+        {
+            Action<string, long> print = (name, sec) => Console.WriteLine("String {0, 15}: {1, 4} ms", name, sec);
+
+            var result = "";
+            var stopwatch = Stopwatch.StartNew();
+            for (var i = 0; i < iterations; i++)
+            {
+                result += " " + i;
+            }
+            stopwatch.Stop();
+            print("sum", stopwatch.ElapsedMilliseconds);
+
+            result = "";
+            stopwatch.Restart();
+            for (var i = 0; i < iterations; i++)
+            {
+                result = string.Format("{0} {1}", result, i);
+            }
+            stopwatch.Stop();
+            print("format", stopwatch.ElapsedMilliseconds);
+
+            var builder = new StringBuilder();
+            stopwatch.Restart();
+            for (var i = 0; i < iterations; i++)
+            {
+                builder.Append(i);
+            }
+            stopwatch.Stop();
+            print("builder", stopwatch.ElapsedMilliseconds);
+
+            result = "";
+            stopwatch.Restart();
+            for (var i = 0; i < iterations; i++)
+            {
+                result = $"{result} {i}";
+            }
+            stopwatch.Stop();
+            print("interpolation", stopwatch.ElapsedMilliseconds);
+        }
+
         private static void PrintResults(IEnumerable<Result> results)
         {
             foreach (var result in results.OrderBy(x => x.StatisticType.Name).ThenBy(x => x.StatisticResult).GroupBy(x => x.StatisticType))
@@ -39,7 +87,7 @@ namespace KenBonny.CorePerformanceTests
                 var enumerator = result.GetEnumerator();
                 while (enumerator.MoveNext())
                 {
-                    Console.WriteLine(string.Format("{0,30}: {1,8} ticks", enumerator.Current.TestType.Name,
+                    Console.WriteLine(string.Format("{0,30}: {1,10} ticks", enumerator.Current.TestType.Name,
                         enumerator.Current.StatisticResult.ToString("##.000")));
                 }
 
@@ -82,7 +130,8 @@ namespace KenBonny.CorePerformanceTests
             {
                 new Average(),
                 new Median(), 
-                new Mode()
+                new Mode(),
+                new Total()
             };
         }
     }
